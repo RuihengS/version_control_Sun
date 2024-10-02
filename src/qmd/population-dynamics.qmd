@@ -69,13 +69,18 @@ Source: United Nations, Department of Economic and Social Affairs,
 Population Division (2013). *World Population Prospects: The 2012 
 Revision, DVD Edition.*
 
+Revision: delete some useless comments here.
+
+Revision: revise the r chunk name to hide tidyverse package.
+
 ```{r, include = FALSE}
 # Load packages ----
 library(tidyverse)
 
 # Read data from three data sets
-world_data  <- readr::read_csv("../../data/raw_data/csv/World.csv")
-kenya_data  <- readr::read_csv("../../data/raw_data/csv/Kenya.csv")
+# Revision: delete spaces
+world_data <- readr::read_csv("../../data/raw_data/csv/World.csv")
+kenya_data <- readr::read_csv("../../data/raw_data/csv/Kenya.csv")
 sweden_data <- readr::read_csv("../../data/raw_data/csv/Sweden.csv")
 ```
 
@@ -113,10 +118,11 @@ Then, store the results as a vector of length 2 (CBRs for two periods) for each 
   
 ### Answer 1
 
-First the study create the new variable `py`.
+Revision: delete comments
 
 ```{r}
 # Combine person-years for men and women into py for each dataset
+# Revision: delete spaces
 world_data$py <- world_data$py.men + world_data$py.women
 kenya_data$py <- kenya_data$py.men + kenya_data$py.women
 sweden_data$py <- sweden_data$py.men + sweden_data$py.women
@@ -131,8 +137,10 @@ sweden_data$py <- sweden_data$py.men + sweden_data$py.women
 
 ```{r}
 # Function to compute the Crude Birth Rate (CBR)
-compute_cbr <- function(populationData) {
-  populationData %>%
+# Revision: change variable names
+# Revision: generally revise into tidyverse style
+compute_cbr <- function(pop_data) {
+  pop_data %>%
     group_by(period) %>%
     summarise(cbr = sum(births) / sum(py)) %>%
     # Extract the 'cbr' values
@@ -156,6 +164,8 @@ compute_cbr <- function(populationData) {
 (kenya_cbr <- compute_cbr(kenya_data))
 (sweden_cbr <- compute_cbr(sweden_data))
 ```
+
+Revision: revise the somments
 
 We could see The global crude birth rate has decreased during this period. Similarly, Sweden and Kenya show a downward trend, consistent with the global pattern, with Sweden maintaining a lower crude birth rate than Kenya throughout the entire period.
   
@@ -207,6 +217,8 @@ sweden_data <- compute_asfr(sweden_data)
 
 We combine Kenya and Sweden's data on ASFR in the same diagram for comparison.
 
+Revision: merge data and create a ggplot diagram.
+
 ```{r}
 # Now the two data sets are merged in one diagram based on the row
 # Two data sets have the exact same row
@@ -243,6 +255,8 @@ kenya_sweden_ASFR <- kenya_sweden_compare %>%
 kenya_sweden_ASFR
 ```
 
+Revision: change the comment.
+
 Now we could see the differences between Kenya and Sweden's data on ASFR. Kenya has a higher ASFR than Sweden from age 10 to 54 in both periods.
 
 ## Question 3
@@ -271,6 +285,7 @@ Using the ASFR, we can define the TFR as the average number of
 The study creates function to compute the total fertility rate (TFR) based on the provided population data.
 
 ```{r}
+# Revision: generally revise into tidyverse style
 # Function to compute the TRF
 compute_tfr <- function(pop_data) {
   # Calculate TFR by period
@@ -291,6 +306,7 @@ Next, the study computes the TFR for three different datasets, and each dataset 
 ```
 
 ```{r}
+# Revision: generally revise into tidyverse style
 # Compute totals of women and births in the world by period
 (totals_world <- world_data %>%
   group_by(period) %>%
@@ -321,6 +337,7 @@ Next, we will examine another important demographic process:
 
 
 ```{r}
+# Revision: generally revise into tidyverse style
 # Function to compute the Crude death rate (CDR)
 compute_cdr <- function(pop_data) {
   # Calculate CDR by period
@@ -362,6 +379,7 @@ One puzzling finding from the previous question is that the CDR
 
 
 ```{r}
+# Revision: generally revise into tidyverse style
 # Function to compute Age specific death rate (ASDR)
 compute_asdr <- function(pop_data) {
   pop_data %>%
@@ -406,6 +424,7 @@ One way to understand the difference in the CDR between Kenya
 
 
 ```{r}
+# Revision: generally revise into tidyverse style
 # Function to compute population proportion by period
 compute_pop_prop <- function(pop_data) {
   pop_data %>%
@@ -427,6 +446,7 @@ sweden_data <- compute_pop_prop(sweden_data)
 Finally, the study calculates Kenya's CDR using Sweden's population distribution. This involves adjusting Kenya's ASDR by the population proportions from Sweden and summarizing the results by period.
 
 ```{r}
+# Revision: generally revise into tidyverse style
 # Compute Kenya's CDR using Sweden's population distribution
 kenya_cdr_sweden <- kenya_data %>%
   mutate(kenya_data,
