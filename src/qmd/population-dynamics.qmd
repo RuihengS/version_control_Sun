@@ -5,18 +5,15 @@ format:
   pdf:
     latex-output-dir: "../../doc/"
   html:
-    latex-output-dir: "../../src/qmd/"
+    embed-resources: true
+    code_folding: hide
+    toc: true
 knitr:
   opts_chunk: 
     fig.path: "../../results/figures/"
 editor: source
-date: 09-19-2024
+date: 10-02-2024
 author: Ruiheng Sun
-output: 
-  html_document:
-    self_contained: true
-    code_folding: hide
-    toc: true
 ---
 
 <!-- These problems come from Imai, K. & Webb Williams, N. (2018). Quantitative Social Science: An introduction -->
@@ -36,11 +33,17 @@ respectively.  The table below presents the names and descriptions of
 the variables in each data set.
 
 <!-- Note the syntax to create a table in markdown -->
+
 <!-- Before the table there must be an empty line, and -->
+
 <!-- the table begins with a line of dashes. -->
+
 <!-- The column names are separated with spaces -->
+
 <!-- and the first character must be a space -->
+
 <!-- Then, segments of repeated dashes indicate the column separations (note -->
+
 <!-- the space between groups of dashes before the character D of the column Description) -->
 
 --------------------------------------------------------------------------------
@@ -63,24 +66,23 @@ the variables in each data set.
 --------------------------------------------------------------------------------
 
 Source: United Nations, Department of Economic and Social Affairs, 
-Population Division (2013). *World Population Prospects: The 2012 Revision, DVD Edition.*
+Population Division (2013). *World Population Prospects: The 2012 
+Revision, DVD Edition.*
 
-```{r message=FALSE, warning=FALSE}
+```{r, include = FALSE}
 # Load packages ----
 library(tidyverse)
-```
 
-```{r}
 # Read data from three data sets
-# I revised the directories since I created the new files.
-# I also changed the "SwedenData" into "sweden_data" for the same formats.
 world_data  <- readr::read_csv("../../data/raw_data/csv/World.csv")
 kenya_data  <- readr::read_csv("../../data/raw_data/csv/Kenya.csv")
 sweden_data <- readr::read_csv("../../data/raw_data/csv/Sweden.csv")
 ```
 
 <!-- The `read_csv` function from the package `readr` -->
+
 <!-- is part of the `tidyverse`. It will read the data into a -->
+
 <!-- special `data.frame` with more structure known as a `tibble` -->
 
 The data are collected for a period of 5 years where *person-year* is
@@ -115,46 +117,47 @@ First the study create the new variable `py`.
 
 ```{r}
 # Combine person-years for men and women into py for each dataset
-world_data$py<-world_data$py.men+world_data$py.women
-kenya_data$py<-kenya_data$py.men+kenya_data$py.women
-sweden_data$py<-sweden_data$py.men+sweden_data$py.women
+world_data$py <- world_data$py.men + world_data$py.women
+kenya_data$py <- kenya_data$py.men + kenya_data$py.women
+sweden_data$py <- sweden_data$py.men + sweden_data$py.women
 ```
 
 
 <!-- Whenever you find that you will repeat the same calculation -->
-<!-- on different sets of data, **consider** creating a function -->
-<!-- instead of repeating the code for each piece of data. -->
 
-Then the study creates the new function for efficiency.
+<!-- on different sets of data, **consider** creating a function -->
+
+<!-- instead of repeating the code for each piece of data. -->
 
 ```{r}
 # Function to compute the Crude Birth Rate (CBR)
 compute_cbr <- function(populationData) {
-  populationData%>% 
-    group_by(period) %>% 
-      summarise(cbr = sum(births) / sum(py)) %>% 
-        # Extract the 'cbr' values    
-        pull(cbr)
+  populationData %>%
+    group_by(period) %>%
+    summarise(cbr = sum(births) / sum(py)) %>%
+    # Extract the 'cbr' values
+    pull(cbr)
 }
 ```
 
 <!-- The "pipe" `%>%` from package `magrittr` takes the output -->
+
 <!-- from the left hand side and makes it the first argument of -->
+
 <!-- the expression on the right hand side. -->
 
 <!-- Starting in R 4.1.0, there is a base pipe operator `|>` -->
-<!-- which has a similar behavior. -->
 
-Lastly, the study could use the function created before to calculate CBR.
+<!-- which has a similar behavior. -->
 
 ```{r}
 # Compute the CBR for each data set
-(world_cbr  <-compute_cbr(world_data))
-(kenya_cbr  <-compute_cbr(kenya_data))
-(sweden_cbr <-compute_cbr(sweden_data))
+(world_cbr <- compute_cbr(world_data))
+(kenya_cbr <- compute_cbr(kenya_data))
+(sweden_cbr <- compute_cbr(sweden_data))
 ```
 
-The results indicate that Sweden has a higher CBR than Kenya.
+We could see The global crude birth rate has decreased during this period. Similarly, Sweden and Kenya show a downward trend, consistent with the global pattern, with Sweden maintaining a lower crude birth rate than Kenya throughout the entire period.
   
 ## Question 2
   
@@ -189,27 +192,58 @@ Similarly, the study creates function for ASFR.
 ```{r}
 # Function to compute Age specific fertility rate (ASFR)
 compute_asfr <- function(pop_data) {
-  pop_data %>% 
-    mutate(asfr=births / py.women)
+  pop_data %>%
+    mutate(asfr = births / py.women)
 }
 ```
 
 Then, the study computes ASFR for each data set.
 
 ```{r}
-world_data  <- compute_asfr(world_data)
-kenya_data  <- compute_asfr(kenya_data)
+world_data <- compute_asfr(world_data)
+kenya_data <- compute_asfr(kenya_data)
 sweden_data <- compute_asfr(sweden_data)
 ```
 
-Now we could see the differences between Kenya and Sweden's data on ASFR.
+We combine Kenya and Sweden's data on ASFR in the same diagram for comparison.
 
 ```{r}
-# Compare ASFRs for Kenya and Sweden
-kenya_data$asfr
-sweden_data$asfr
+# Now the two data sets are merged in one diagram based on the row
+# Two data sets have the exact same row
+kenya_sweden_compare <- rbind(kenya_data, sweden_data)
+
+# Convert the 'age' column into a factor with specified levels for ordered
+# categorical data
+kenya_sweden_compare$age <- factor(kenya_sweden_compare$age,
+  levels = c(
+    "0-4", "5-9", "10-14", "15-19",
+    "20-24", "25-29", "30-34", "35-39",
+    "40-44", "45-49", "50-54", "55-59",
+    "60-69", "70-79", "80+"
+  )
+)
+
+# Create a line plot to compare ASFRs between Kenya and Sweden
+kenya_sweden_ASFR <- kenya_sweden_compare %>%
+  ggplot(aes(x = age, y = asfr, group = country, color = country)) +
+  # Set aesthetics for Kenya and Sweden
+  geom_line() + # Use geom_line() to create lines for each country
+  labs(
+    title = "Age-Specific Fertility Rate Comparison",
+    x = "Age",
+    y = "ASFR",
+    color = "Country"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 55, vjust = 0.5)) +
+  facet_wrap(~period) # Create separate plots for each period to visualize
+# differences over time
+
+# Display the plot
+kenya_sweden_ASFR
 ```
-We could see that Sweden has a higher ASFR among youth than Kenya in both two periods.
+
+Now we could see the differences between Kenya and Sweden's data on ASFR. Kenya has a higher ASFR than Sweden from age 10 to 54 in both periods.
 
 ## Question 3
 
@@ -240,10 +274,10 @@ The study creates function to compute the total fertility rate (TFR) based on th
 # Function to compute the TRF
 compute_tfr <- function(pop_data) {
   # Calculate TFR by period
-  pop_data %>% 
-    group_by(period) %>% 
-      summarise(tfr=5 *sum(asfr)) %>% 
-        pull(tfr)
+  pop_data %>%
+    group_by(period) %>%
+    summarise(tfr = 5 * sum(asfr)) %>%
+    pull(tfr)
 }
 ```
 
@@ -251,26 +285,25 @@ Next, the study computes the TFR for three different datasets, and each dataset 
 
 ```{r}
 # Compute the TFR for each data set
-(world_tfr  <- compute_tfr(world_data))
-(kenya_tfr  <- compute_tfr(kenya_data))
+(world_tfr <- compute_tfr(world_data))
+(kenya_tfr <- compute_tfr(kenya_data))
 (sweden_tfr <- compute_tfr(sweden_data))
 ```
 
-Now, the study calculates the totals of women and births in the world by period. This will help to understand how the demographics have changed over time.
-
 ```{r}
 # Compute totals of women and births in the world by period
-(
-world_data %>%
-  group_by(period) %>% 
-    summarise(total_women=sum(py.women),
-      total_births=sum(births)) ->
-        totals_world
+(totals_world <- world_data %>%
+  group_by(period) %>%
+  summarise(
+    total_women = sum(py.women),
+    total_births = sum(births)
+  )
 )
 
 # Compare how much these totals have changed
-(changes_totals<-totals_world[2,-1]/totals_world[1,-1])
+(changes_totals <- totals_world[2, -1] / totals_world[1, -1])
 ```
+
 The results show that the total number of women during 2005-2010 is 2.525 times greater than that during 1950-1955, and total number of births during 2005-2010 is 1.380 times greater than that during 1950-1955.
 
 ## Question 4
@@ -291,17 +324,17 @@ Next, we will examine another important demographic process:
 # Function to compute the Crude death rate (CDR)
 compute_cdr <- function(pop_data) {
   # Calculate CDR by period
-  pop_data %>% 
-    group_by(period) %>% 
-      summarise(cdr = sum(deaths) / sum(py)) %>% 
-        pull(cdr)
+  pop_data %>%
+    group_by(period) %>%
+    summarise(cdr = sum(deaths) / sum(py)) %>%
+    pull(cdr)
 }
 ```
 
 ```{r}
 # Compute the CDR for each data set
-(world_cdr  <- compute_cdr(world_data))
-(kenya_cdr  <- compute_cdr(kenya_data))
+(world_cdr <- compute_cdr(world_data))
+(kenya_cdr <- compute_cdr(kenya_data))
 (sweden_cdr <- compute_cdr(sweden_data))
 ```
 
@@ -331,9 +364,9 @@ One puzzling finding from the previous question is that the CDR
 ```{r}
 # Function to compute Age specific death rate (ASDR)
 compute_asdr <- function(pop_data) {
-  pop_data %>% 
+  pop_data %>%
     # Compute ASDR as deaths per population
-    mutate(asdr=deaths/py)
+    mutate(asdr = deaths / py)
 }
 ```
 
@@ -341,8 +374,8 @@ Next, the study uses the function `compute_asdr` to calculate ASDR.
 
 ```{r}
 # Compute ASDR for each data set
-world_data  <- compute_asdr(world_data)
-kenya_data  <- compute_asdr(kenya_data)
+world_data <- compute_asdr(world_data)
+kenya_data <- compute_asdr(kenya_data)
 sweden_data <- compute_asdr(sweden_data)
 ```
 
@@ -375,20 +408,20 @@ One way to understand the difference in the CDR between Kenya
 ```{r}
 # Function to compute population proportion by period
 compute_pop_prop <- function(pop_data) {
-pop_data %>% 
-  group_by(period) %>%
+  pop_data %>%
+    group_by(period) %>%
     # Compute proportion of population
     mutate(pop_prop = py / sum(py)) %>%
-      # Ungroup to avoid issues in further operations
-      ungroup()
+    # Ungroup to avoid issues in further operations
+    ungroup()
 }
 ```
 
 ```{r}
 # Compute population proportion for each data set
-world_data<- compute_pop_prop(world_data)
-kenya_data<- compute_pop_prop(kenya_data)
-sweden_data<- compute_pop_prop(sweden_data)
+world_data <- compute_pop_prop(world_data)
+kenya_data <- compute_pop_prop(kenya_data)
+sweden_data <- compute_pop_prop(sweden_data)
 ```
 
 Finally, the study calculates Kenya's CDR using Sweden's population distribution. This involves adjusting Kenya's ASDR by the population proportions from Sweden and summarizing the results by period.
@@ -397,9 +430,10 @@ Finally, the study calculates Kenya's CDR using Sweden's population distribution
 # Compute Kenya's CDR using Sweden's population distribution
 kenya_cdr_sweden <- kenya_data %>%
   mutate(kenya_data,
-    cfactual_cdr  = asdr * sweden_data$pop_prop) %>%
-      group_by(period) %>%
-        summarise(cdrresweden = sum(cfactual_cdr))
+    cfactual_cdr = asdr * sweden_data$pop_prop
+  ) %>%
+  group_by(period) %>%
+  summarise(cdrresweden = sum(cfactual_cdr))
 ```
 
 As a result, the counterfactual CDR has a higher value than the original CDR of Kenya.
