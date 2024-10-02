@@ -1,0 +1,11 @@
+Feedback:
+
+Directory structure:
+1. No html file
+
+Tidyverse style:
+1. There are several places where you have missed the spaces around operators.
+2. Argument names need to be modified to be consistent across functions.
+
+Comments:
+1. Comments within functions are somewhat redundant with the code itself.

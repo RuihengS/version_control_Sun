@@ -1,0 +1,12 @@
+Feedback:
+
+Directory structure:
+1. Create a html file
+
+Tidyverse style:
+1. Check several places where I have missed the spaces around operators.
+2. Use style selection to revise the tidyverse style.
+3. Change some argument names to be consistent across functions.
+
+Comments:
+1. Rewrite and delete some comments
